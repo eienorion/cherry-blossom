@@ -19,7 +19,8 @@
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
-      tailwind.config = {
+      
+    .config = {
         theme: {
           extend: {
             fontFamily: {
@@ -49,18 +50,22 @@
     </script>
 
     <style>
-      /* Full-screen luminous white canvas without scrollbars */
+      /* Full-screen luminous white canvas using dynamic viewport units & safe areas */
       html,
       body {
         margin: 0;
         padding: 0;
         width: 100%;
         height: 100%;
+        min-height: 100dvh;
+        height: 100dvh;
         overflow: hidden;
+        overscroll-behavior: none;
         background-color: #ffffff;
         color: #231f20;
         font-family: "Plus Jakarta Sans", sans-serif;
         user-select: none;
+        -webkit-user-select: none;
         -webkit-tap-highlight-color: transparent;
       }
 
@@ -68,46 +73,62 @@
         display: block;
         width: 100%;
         height: 100%;
-        touch-action: manipulation;
+        touch-action: none;
       }
 
-      /* Frosted white secondary surfaces with warm pearl borders & diffused shadows */
+      /* GPU-Optimized Frosted Glass Surfaces (max 8px blur + multi-stop luminous gradient) */
       .frosted-card {
-        background: rgba(255, 255, 255, 0.93);
-        backdrop-filter: blur(16px);
-        -webkit-backdrop-filter: blur(16px);
-        border: 1px solid rgba(218, 165, 180, 0.35);
+        background: linear-gradient(
+          145deg,
+          rgba(255, 255, 255, 0.96) 0%,
+          rgba(253, 249, 248, 0.92) 100%
+        );
+        backdrop-filter: blur(8px);
+        -webkit-backdrop-filter: blur(8px);
+        border: 1px solid rgba(218, 165, 180, 0.4);
         box-shadow:
-          0 24px 60px -12px rgba(60, 45, 50, 0.1),
-          0 8px 24px -6px rgba(60, 45, 50, 0.06),
+          0 20px 48px -12px rgba(60, 45, 50, 0.1),
+          0 6px 18px -4px rgba(60, 45, 50, 0.05),
           inset 0 1px 0 rgba(255, 255, 255, 1);
+        will-change: transform, opacity;
       }
 
       .frosted-pill {
-        background: rgba(255, 255, 255, 0.92);
-        backdrop-filter: blur(16px);
-        -webkit-backdrop-filter: blur(16px);
-        border: 1px solid rgba(218, 165, 180, 0.35);
+        background: linear-gradient(
+          145deg,
+          rgba(255, 255, 255, 0.96) 0%,
+          rgba(253, 249, 248, 0.91) 100%
+        );
+        backdrop-filter: blur(8px);
+        -webkit-backdrop-filter: blur(8px);
+        border: 1px solid rgba(218, 165, 180, 0.38);
         box-shadow:
-          0 8px 24px -4px rgba(60, 45, 50, 0.08),
+          0 8px 20px -4px rgba(60, 45, 50, 0.07),
           inset 0 1px 0 rgba(255, 255, 255, 1);
-        transition: all 0.32s cubic-bezier(0.22, 1, 0.36, 1);
       }
 
-      /* Serene entrance animation for the note card */
+      /* GPU Compositor-only Tooltip Layer (uses translate3d instead of top/left) */
+      #hoverTooltip {
+        left: 0;
+        top: 0;
+        will-change: transform, opacity;
+        transition: opacity 0.18s ease-out;
+      }
+
+      /* Pure GPU Compositor Entrance Animation (translate3d + scale + opacity only) */
       @keyframes sereneCardFade {
         0% {
           opacity: 0;
-          transform: translateY(18px) scale(0.97);
+          transform: translate3d(0, 18px, 0) scale(0.97);
         }
         100% {
           opacity: 1;
-          transform: translateY(0) scale(1);
+          transform: translate3d(0, 0, 0) scale(1);
         }
       }
 
       .animate-serene-reveal {
-        animation: sereneCardFade 0.85s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        animation: sereneCardFade 0.75s cubic-bezier(0.16, 1, 0.3, 1) forwards;
       }
     </style>
   </head>
@@ -115,75 +136,83 @@
     <!-- Main Interactive Daylight Canvas -->
     <canvas id="sakuraCanvas"></canvas>
 
-    <!-- Clean Minimalist Top-Center Parameter Header -->
+    <!-- Clean Minimalist Top-Center Parameter Header (Safe-Area & Responsive Width Aware) -->
     <header
-      class="fixed top-5 sm:top-7 left-1/2 -translate-x-1/2 z-20 pointer-events-none px-4 w-full flex justify-center"
+      id="topHeader"
+      style="padding-top: max(1rem, env(safe-area-inset-top));"
+      class="fixed top-0 sm:top-5 left-1/2 -translate-x-1/2 z-20 pointer-events-none px-3 sm:px-4 w-full flex justify-center"
     >
       <div
-        class="frosted-pill rounded-full px-5 py-2.5 sm:px-7 sm:py-3 inline-flex items-center gap-3 sm:gap-4"
+        class="frosted-pill max-w-[94vw] rounded-full px-4 py-2 sm:px-7 sm:py-3 inline-flex items-center justify-center gap-2.5 sm:gap-4"
       >
-        <span class="w-2 h-2 rounded-full bg-sakura-deep shrink-0"></span>
+        <span class="w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full bg-sakura-deep shrink-0"></span>
         <h1
-          class="font-serif italic text-lg sm:text-xl text-charcoal leading-none font-medium tracking-wide whitespace-nowrap"
+          class="font-serif italic text-[15px] sm:text-xl md:text-[22px] text-charcoal leading-none font-medium tracking-wide truncate"
         >
           10 things i like about you
         </h1>
-        <span class="w-px h-4 bg-pearl shrink-0"></span>
+        <span class="w-px h-3.5 sm:h-4 bg-pearl shrink-0"></span>
         <span
           id="counterLabel"
-          class="font-sans text-xs sm:text-sm font-medium tracking-[0.16em] text-sakura-deep whitespace-nowrap"
+          class="font-sans text-[11px] sm:text-sm font-medium tracking-[0.14em] sm:tracking-[0.16em] text-sakura-deep whitespace-nowrap shrink-0"
         >
           0/10
         </span>
       </div>
     </header>
 
-    <!-- Floating Frosted-White Hover Tooltip (Preserved from Reference) -->
+    <!-- Floating Frosted-White Hover Tooltip (Positioned via GPU translate3d) -->
     <div
       id="hoverTooltip"
-      class="fixed z-20 pointer-events-none opacity-0 transition-opacity duration-200 -translate-x-1/2 -translate-y-full pb-3"
+      class="fixed z-20 pointer-events-none opacity-0 pb-2.5 sm:pb-3"
+      style="transform: translate3d(-9999px, -9999px, 0);"
     >
       <div
-        class="frosted-pill rounded-full px-3.5 py-1.5 flex items-center gap-2 whitespace-nowrap"
+        class="frosted-pill rounded-full px-3 py-1.5 sm:px-3.5 sm:py-1.5 flex items-center gap-1.5 sm:gap-2 whitespace-nowrap"
       >
         <span
           id="tooltipIndex"
-          class="text-[11px] font-semibold text-sakura-deep"
+          class="text-[10px] sm:text-[11px] font-semibold text-sakura-deep"
           >#01</span
         >
         <span class="w-1 h-1 rounded-full bg-pearl"></span>
-        <span id="tooltipLabel" class="text-xs text-charcoal font-normal"
+        <span id="tooltipLabel" class="text-[11px] sm:text-xs text-charcoal font-normal"
           >Touch to release petal</span
         >
       </div>
     </div>
 
-    <!-- Serene Frosted-White Note Modal -->
+    <!-- Serene Frosted-White Note Modal (Responsive & Zero Expensive Filter Blur) -->
     <div
       id="quoteModal"
       role="dialog"
       aria-modal="true"
       aria-labelledby="quoteText"
-      class="fixed inset-0 z-40 hidden items-center justify-center p-4 sm:p-6 bg-white/45 backdrop-blur-xs transition-opacity duration-500"
+      style="padding-top: max(1rem, env(safe-area-inset-top)); padding-bottom: max(1rem, env(safe-area-inset-bottom));"
+      class="fixed inset-0 z-40 hidden items-center justify-center p-4 sm:p-6 md:p-8 bg-white/55 overflow-y-auto"
     >
       <div
         id="quoteCard"
-        class="frosted-card relative w-full max-w-xl rounded-3xl p-8 sm:p-11 md:p-12 text-center overflow-hidden"
+        class="frosted-card relative w-full max-w-[92vw] sm:max-w-lg md:max-w-xl max-h-[88dvh] overflow-y-auto rounded-3xl p-6 pt-11 sm:p-10 md:p-12 text-center my-auto"
       >
-        <!-- Subtle Warm Blush & White Ambient Glow Inside Card -->
+        <!-- Lightweight Radial Gradient Ambient Glows (Replaces costly filter: blur) -->
         <div
-          class="pointer-events-none absolute -top-24 -right-24 w-56 h-56 rounded-full bg-sakura-blush/45 blur-3xl"
+          aria-hidden="true"
+          style="background: radial-gradient(circle, rgba(250, 218, 221, 0.42) 0%, rgba(250, 218, 221, 0) 70%);"
+          class="pointer-events-none absolute -top-20 -right-20 w-52 sm:w-64 h-52 sm:h-64 rounded-full"
         ></div>
         <div
-          class="pointer-events-none absolute -bottom-24 -left-24 w-56 h-56 rounded-full bg-alabaster blur-3xl"
+          aria-hidden="true"
+          style="background: radial-gradient(circle, rgba(244, 167, 185, 0.2) 0%, rgba(252, 251, 249, 0) 70%);"
+          class="pointer-events-none absolute -bottom-20 -left-20 w-52 sm:w-64 h-52 sm:h-64 rounded-full"
         ></div>
 
-        <!-- Close Button -->
+        <!-- Close Button (44x44 Touch Target) -->
         <button
           id="closeQuoteBtn"
           type="button"
           aria-label="Close note"
-          class="absolute top-4 right-4 sm:top-5 sm:right-5 w-10 h-10 rounded-full flex items-center justify-center text-charcoal-muted hover:text-charcoal hover:bg-alabaster transition cursor-pointer"
+          class="absolute top-3 right-3 sm:top-5 sm:right-5 w-11 h-11 rounded-full flex items-center justify-center text-charcoal-muted hover:text-charcoal hover:bg-alabaster active:scale-95 transition-transform duration-150 cursor-pointer"
         >
           <svg
             class="w-5 h-5"
@@ -201,17 +230,17 @@
 
         <!-- Frosted White Petal Badge -->
         <div
-          class="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-white border border-pearl text-charcoal-muted text-xs tracking-[0.2em] uppercase mb-6 shadow-2xs"
+          class="inline-flex items-center gap-2 px-3 sm:px-3.5 py-1 rounded-full bg-white border border-pearl text-charcoal-muted text-[11px] sm:text-xs tracking-[0.2em] uppercase mb-4 sm:mb-6"
         >
           <span class="w-1.5 h-1.5 rounded-full bg-sakura-deep"></span>
           <span id="quoteBadge">01 / 10</span>
         </div>
 
         <!-- Note Text -->
-        <blockquote class="relative my-2">
+        <blockquote class="relative my-1 sm:my-2 px-1">
           <p
             id="quoteText"
-            class="font-serif italic text-2xl sm:text-3xl md:text-[32px] text-charcoal leading-[1.45] font-normal"
+            class="font-serif italic text-xl sm:text-2xl md:text-[32px] text-charcoal leading-[1.42] sm:leading-[1.45] font-normal"
           >
             “Her eyes, especially the way they sparkle.”
           </p>
@@ -219,30 +248,30 @@
 
         <!-- Minimalist Divider -->
         <div
-          class="w-16 h-px bg-gradient-to-r from-transparent via-sakura-petal to-transparent mx-auto my-6"
+          class="w-14 sm:w-16 h-px bg-gradient-to-r from-transparent via-sakura-petal to-transparent mx-auto my-4 sm:my-6"
         ></div>
 
         <!-- Title & Reason Attribution -->
-        <div class="space-y-1 mb-7">
+        <div class="space-y-1 mb-5 sm:mb-7">
           <p
-            class="text-xs sm:text-sm font-semibold tracking-[0.2em] uppercase text-charcoal"
+            class="text-[11px] sm:text-sm font-semibold tracking-[0.2em] uppercase text-charcoal"
           >
             10 things i like about you
           </p>
           <p
             id="quoteSource"
-            class="text-sm sm:text-base text-charcoal-muted italic font-serif"
+            class="text-xs sm:text-base text-charcoal-muted italic font-serif"
           >
             Reason #01 of 10
           </p>
         </div>
 
-        <!-- Single Dismiss Action -->
+        <!-- Single Dismiss Action (Comfortable Touch Target) -->
         <div class="flex items-center justify-center">
           <button
             id="continueTreeBtn"
             type="button"
-            class="rounded-full px-7 py-2.5 text-xs sm:text-sm font-medium bg-charcoal text-white hover:bg-bark-dark transition shadow-md shadow-charcoal/10 cursor-pointer"
+            class="rounded-full min-h-[44px] px-8 py-2.5 text-xs sm:text-sm font-medium bg-charcoal text-white hover:bg-bark-dark active:scale-95 transition-transform duration-150 shadow-md shadow-charcoal/10 cursor-pointer"
           >
             Lanjutkan
           </button>
@@ -309,10 +338,407 @@
         },
       ];
 
+      const DECORATIVE_PALETTES = [
+        {
+          tip: "#FFFFFF",
+          mid: "#FADADD",
+          center: "#F4A7B9",
+          stamen: "#C99A4E",
+        },
+        {
+          tip: "#FFFFFF",
+          mid: "#FCE8EC",
+          center: "#E67E96",
+          stamen: "#C99A4E",
+        },
+        {
+          tip: "#FFF9FA",
+          mid: "#F4A7B9",
+          center: "#FFFFFF",
+          stamen: "#B8893E",
+        },
+        {
+          tip: "#FFFFFF",
+          mid: "#FADADD",
+          center: "#FFFFFF",
+          stamen: "#C99A4E",
+        },
+      ];
+
+      /**
+       * ============================================================================
+       * 1. OFFSCREEN CANVAS SPRITE CACHE (RETINA DPR <= 2)
+       * Pre-renders all complex Bezier blossom curves, radial gradients, soft
+       * shadows, buds, single fallen petals, and pollen motes ONCE at startup so
+       * the 60 FPS loop uses pure GPU-accelerated ctx.drawImage() calls.
+       * ============================================================================
+       */
+      class SakuraSpriteCache {
+        constructor(dpr) {
+          this.dpr = dpr;
+          this.decorativeBlossoms = [];
+          this.budSprite = null;
+          this.interactiveBlossom = null;
+          this.interactiveBlossomHover = null;
+          this.singlePetals = [];
+          this.pollenSprites = {};
+          this.rebuild(dpr);
+        }
+
+        rebuild(dpr) {
+          this.dpr = dpr;
+
+          // Pre-render the 4 decorative blossom color variations
+          this.decorativeBlossoms = DECORATIVE_PALETTES.map((pal) =>
+            this.bakeBlossomSprite(pal, {
+              isInteractive: false,
+              hoverBoost: 0,
+              shadowOffsetY: 3,
+              shadowBlur: 6,
+              shadowAlpha: 0.065,
+            }),
+          );
+
+          // Pre-render interactive blossom (default & hovered states) at high resolution
+          const interactivePal = {
+            center: "#FFFFFF",
+            mid: "#FADADD",
+            tip: "#FFFFFF",
+            stamen: "#C99A4E",
+          };
+          this.interactiveBlossom = this.bakeBlossomSprite(interactivePal, {
+            isInteractive: true,
+            hoverBoost: 0,
+            shadowOffsetY: 5,
+            shadowBlur: 10,
+            shadowAlpha: 0.09,
+          });
+          this.interactiveBlossomHover = this.bakeBlossomSprite(interactivePal, {
+            isInteractive: true,
+            hoverBoost: 1,
+            shadowOffsetY: 9,
+            shadowBlur: 16,
+            shadowAlpha: 0.14,
+          });
+
+          // Pre-render flower bud sprite
+          this.budSprite = this.bakeBudSprite();
+
+          // Pre-render the 3 single fallen petal variations ("kelopak gugur putus")
+          this.singlePetals = [0, 1, 2].map((tone) =>
+            this.bakeSinglePetalSprite(tone),
+          );
+
+          // Pre-render sunlit gold & blush pollen mote sprites
+          this.pollenSprites.gold = this.bakePollenSprite(
+            "rgba(214, 174, 108, 0.32)",
+          );
+          this.pollenSprites.blush = this.bakePollenSprite(
+            "rgba(244, 167, 185, 0.36)",
+          );
+        }
+
+        bakeBlossomSprite(palette, options) {
+          const {
+            isInteractive = false,
+            hoverBoost = 0,
+            shadowOffsetY = 5,
+            shadowBlur = 10,
+            shadowAlpha = 0.09,
+          } = options;
+
+          // Bake at logical radius 40px (up to 80px physical @ 2x DPR) so scaling stays crisp
+          const logicalRadius = 40;
+          const logicalBox = 116;
+          const canvas = document.createElement("canvas");
+          canvas.width = Math.ceil(logicalBox * this.dpr);
+          canvas.height = Math.ceil(logicalBox * this.dpr);
+
+          const ctx = canvas.getContext("2d");
+          ctx.scale(this.dpr, this.dpr);
+          ctx.translate(logicalBox * 0.5, logicalBox * 0.5);
+
+          const radius = logicalRadius;
+
+          ctx.save();
+          ctx.shadowColor = `rgba(60, 45, 50, ${shadowAlpha})`;
+          ctx.shadowBlur = shadowBlur;
+          ctx.shadowOffsetX = shadowOffsetY * 0.35;
+          ctx.shadowOffsetY = shadowOffsetY;
+
+          for (let p = 0; p < 5; p++) {
+            ctx.save();
+            ctx.rotate((p * Math.PI * 2) / 5);
+
+            const pGrad = ctx.createRadialGradient(
+              0,
+              -radius * 0.12,
+              radius * 0.05,
+              0,
+              -radius * 0.55,
+              radius * 1.02,
+            );
+            pGrad.addColorStop(0, palette.center);
+            pGrad.addColorStop(0.46, palette.mid);
+            pGrad.addColorStop(0.88, palette.tip);
+            pGrad.addColorStop(1, "#FFFFFF");
+
+            ctx.fillStyle = pGrad;
+            ctx.beginPath();
+            ctx.moveTo(0, 0);
+            ctx.bezierCurveTo(
+              -radius * 0.44,
+              -radius * 0.25,
+              -radius * 0.52,
+              -radius * 0.78,
+              -radius * 0.14,
+              -radius * 0.98,
+            );
+            ctx.lineTo(0, -radius * 0.85);
+            ctx.lineTo(radius * 0.14, -radius * 0.98);
+            ctx.bezierCurveTo(
+              radius * 0.52,
+              -radius * 0.78,
+              radius * 0.44,
+              -radius * 0.25,
+              0,
+              0,
+            );
+            ctx.closePath();
+            ctx.fill();
+
+            ctx.shadowColor = "transparent";
+            ctx.strokeStyle = isInteractive
+              ? `rgba(230, 126, 150, ${0.42 + hoverBoost * 0.28})`
+              : "rgba(244, 167, 185, 0.38)";
+            ctx.lineWidth = isInteractive ? 1.1 : 0.85;
+            ctx.stroke();
+
+            ctx.restore();
+          }
+
+          ctx.shadowColor = "transparent";
+
+          // Floral center
+          ctx.fillStyle = isInteractive ? "#FFFFFF" : "#FADADD";
+          ctx.beginPath();
+          ctx.arc(0, 0, radius * 0.17, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.strokeStyle = "rgba(230, 126, 150, 0.45)";
+          ctx.lineWidth = 0.8;
+          ctx.stroke();
+
+          // Golden-ivory stamens
+          const stamenCount = isInteractive ? 9 : 6;
+          for (let s = 0; s < stamenCount; s++) {
+            const ang = (s * Math.PI * 2) / stamenCount + 0.25;
+            const sLen = radius * (0.28 + (s % 2) * 0.09);
+            const sx = Math.cos(ang) * sLen;
+            const sy = Math.sin(ang) * sLen;
+
+            ctx.beginPath();
+            ctx.moveTo(0, 0);
+            ctx.lineTo(sx, sy);
+            ctx.strokeStyle = "rgba(230, 126, 150, 0.55)";
+            ctx.lineWidth = 0.85;
+            ctx.stroke();
+
+            ctx.fillStyle = palette.stamen || "#C99A4E";
+            ctx.beginPath();
+            ctx.arc(sx, sy, Math.max(1.2, radius * 0.055), 0, Math.PI * 2);
+            ctx.fill();
+          }
+
+          ctx.restore();
+
+          return {
+            canvas,
+            logicalRadius,
+            logicalBox,
+            ratio: logicalBox / logicalRadius,
+          };
+        }
+
+        bakeBudSprite() {
+          const logicalRadius = 18;
+          const logicalBox = 48;
+          const canvas = document.createElement("canvas");
+          canvas.width = Math.ceil(logicalBox * this.dpr);
+          canvas.height = Math.ceil(logicalBox * this.dpr);
+
+          const ctx = canvas.getContext("2d");
+          ctx.scale(this.dpr, this.dpr);
+          ctx.translate(logicalBox * 0.5, logicalBox * 0.5);
+
+          ctx.fillStyle = "#FADADD";
+          ctx.strokeStyle = "rgba(230, 126, 150, 0.45)";
+          ctx.lineWidth = 1.0;
+          ctx.beginPath();
+          ctx.ellipse(
+            0,
+            0,
+            logicalRadius * 0.34,
+            logicalRadius * 0.56,
+            0,
+            0,
+            Math.PI * 2,
+          );
+          ctx.fill();
+          ctx.stroke();
+
+          return {
+            canvas,
+            logicalRadius,
+            logicalBox,
+            ratio: logicalBox / logicalRadius,
+          };
+        }
+
+        bakeSinglePetalSprite(tone) {
+          const s = 18;
+          const logicalBox = 52;
+          const canvas = document.createElement("canvas");
+          canvas.width = Math.ceil(logicalBox * this.dpr);
+          canvas.height = Math.ceil(logicalBox * this.dpr);
+
+          const ctx = canvas.getContext("2d");
+          ctx.scale(this.dpr, this.dpr);
+          ctx.translate(logicalBox * 0.5, logicalBox * 0.5);
+
+          ctx.shadowColor = "rgba(60, 45, 50, 0.08)";
+          ctx.shadowBlur = 5;
+          ctx.shadowOffsetY = 3;
+
+          const grad = ctx.createRadialGradient(0, s * 0.25, 0.5, 0, 0, s * 1.1);
+          if (tone === 0) {
+            grad.addColorStop(0, "#F8C8D6");
+            grad.addColorStop(0.65, "#FADADD");
+            grad.addColorStop(1, "#FFFFFF");
+          } else if (tone === 1) {
+            grad.addColorStop(0, "#F4A7B9");
+            grad.addColorStop(0.6, "#FCE8EE");
+            grad.addColorStop(1, "#FFFFFF");
+          } else {
+            grad.addColorStop(0, "#FADADD");
+            grad.addColorStop(0.7, "#FFF6F8");
+            grad.addColorStop(1, "#FFFFFF");
+          }
+
+          ctx.fillStyle = grad;
+          ctx.beginPath();
+          ctx.moveTo(0, s);
+          ctx.bezierCurveTo(
+            -s * 0.72,
+            s * 0.35,
+            -s * 0.78,
+            -s * 0.62,
+            -s * 0.2,
+            -s * 0.98,
+          );
+          ctx.lineTo(0, -s * 0.76);
+          ctx.lineTo(s * 0.2, -s * 0.98);
+          ctx.bezierCurveTo(s * 0.78, -s * 0.62, s * 0.72, s * 0.35, 0, s);
+          ctx.closePath();
+          ctx.fill();
+
+          ctx.shadowColor = "transparent";
+          ctx.strokeStyle = "rgba(230, 138, 166, 0.44)";
+          ctx.lineWidth = 0.95;
+          ctx.stroke();
+
+          return {
+            canvas,
+            logicalRadius: s,
+            logicalBox,
+            ratio: logicalBox / s,
+          };
+        }
+
+        bakePollenSprite(color) {
+          const logicalBox = 16;
+          const canvas = document.createElement("canvas");
+          canvas.width = Math.ceil(logicalBox * this.dpr);
+          canvas.height = Math.ceil(logicalBox * this.dpr);
+
+          const ctx = canvas.getContext("2d");
+          ctx.scale(this.dpr, this.dpr);
+          ctx.fillStyle = color;
+          ctx.beginPath();
+          ctx.arc(8, 8, 5, 0, Math.PI * 2);
+          ctx.fill();
+
+          return canvas;
+        }
+      }
+
+      /**
+       * ============================================================================
+       * 2. OBJECT POOL FOR SINGLE SAKURA PETALS ("KELOPAK GUGUR PUTUS")
+       * Pre-allocates a fixed pool bounded by device capability (50 on low-end
+       * mobile devices, 110 on standard/high-end devices) and recycles petals
+       * in-place when leaving the viewport to eliminate GC spikes & memory leaks.
+       * ============================================================================
+       */
+      class PetalObjectPool {
+        constructor(capacity) {
+          this.capacity = capacity;
+          this.items = new Array(capacity);
+          for (let i = 0; i < capacity; i++) {
+            this.items[i] = {
+              active: false,
+              persistent: true,
+              x: 0,
+              y: 0,
+              vx: 0,
+              vy: 0,
+              size: 7,
+              rot: 0,
+              vRot: 0,
+              flipPhase: 0,
+              flipSpeed: 2,
+              swayPhase: 0,
+              swayAmp: 14,
+              alpha: 0.9,
+              delay: 0,
+              tone: 0,
+            };
+          }
+        }
+
+        acquire() {
+          for (let i = 0; i < this.capacity; i++) {
+            if (!this.items[i].active) {
+              this.items[i].active = true;
+              return this.items[i];
+            }
+          }
+          return null;
+        }
+
+        release(petal) {
+          petal.active = false;
+        }
+
+        clearAll() {
+          for (let i = 0; i < this.capacity; i++) {
+            this.items[i].active = false;
+          }
+        }
+
+        rescalePositions(scaleX, scaleY) {
+          for (let i = 0; i < this.capacity; i++) {
+            const p = this.items[i];
+            if (p.active) {
+              p.x *= scaleX;
+              p.y *= scaleY;
+            }
+          }
+        }
+      }
+
       /**
        * ============================================================================
        * PROCEDURAL SUMMER BREEZE & HARMONIC CHIME ENGINE (WEB AUDIO API)
-       * Unlocks gently on first touch/click without requiring extra UI buttons.
        * ============================================================================
        */
       class SummerBreezeAudio {
@@ -460,23 +886,30 @@
 
       /**
        * ============================================================================
-       * MAIN INTERACTIVE SAKURA EXPERIENCE
-       * - Exact zoomed-in sakura tree from reference with sharp pointed branch tips
-       * - 10 interactive blossoms for "10 things i like about you"
-       * - Preserved hover glow, flutter, and floating tooltip
-       * - At 10/10: all remaining blossoms break apart into single detached petals
-       *   ("kelopak gugur putus") that persist and drift endlessly across the screen
+       * MAIN INTERACTIVE SAKURA EXPERIENCE (OPTIMIZED 60 FPS ENGINE)
        * ============================================================================
        */
       class SakuraExperience {
         constructor() {
           this.canvas = document.getElementById("sakuraCanvas");
-          this.ctx = this.canvas.getContext("2d");
+          this.ctx = this.canvas.getContext("2d", { alpha: false });
           this.sound = new SummerBreezeAudio();
 
           this.width = window.innerWidth;
           this.height = window.innerHeight;
+          // 1. Cap DPR at 2 to prevent 3x/4x mobile GPU overdraw while keeping Retina crispness
           this.dpr = Math.min(window.devicePixelRatio || 1, 2);
+
+          // 2. Dynamic particle budget based on hardwareConcurrency (50 low-end / 110 high-end)
+          const cpuCores = navigator.hardwareConcurrency || 4;
+          this.isLowEndDevice =
+            cpuCores <= 4 || (this.width < 640 && cpuCores <= 6);
+          this.maxActivePetals = this.isLowEndDevice ? 50 : 110;
+
+          // Offscreen caches
+          this.sprites = new SakuraSpriteCache(this.dpr);
+          this.bgCanvas = document.createElement("canvas");
+          this.petalPool = new PetalObjectPool(this.maxActivePetals);
 
           // States: 'BLOOMING' -> 'SCATTERED'
           this.state = "BLOOMING";
@@ -499,19 +932,23 @@
           // Active detached blossom gliding gently toward the viewer
           this.driftingBlossom = null;
 
-          // Persistent single fallen petals ("kelopak gugur putus") after 10/10
-          this.scatteredPetals = [];
-
           this.breezeWave = 0;
           this.breezeRibbons = [];
 
-          // Sunlit summer pollen motes & ambient drifting single petals
+          // Sunlit summer pollen motes
           this.pollenMotes = [];
-          this.ambientPetals = [];
 
-          // Pointer & UI state
+          // Pointer, Tooltip & Throttling state (36ms minimum interval)
           this.pointer = { x: -9999, y: -9999 };
+          this.lastPointerMoveTime = 0;
+          this.moveThrottleMs = 36;
+          this.isTouchDevice =
+            "ontouchstart" in window || (navigator.maxTouchPoints || 0) > 0;
           this.hoveredBlossom = null;
+          this.tooltipEl = document.getElementById("hoverTooltip");
+          this.lastTooltipX = -9999;
+          this.lastTooltipY = -9999;
+
           this.activeQuote = null;
           this.lastTimestamp = performance.now();
 
@@ -522,12 +959,55 @@
 
         bindEvents() {
           window.addEventListener("resize", () => this.handleResize(false));
-
-          this.canvas.addEventListener("pointermove", (e) => {
-            this.pointer.x = e.clientX;
-            this.pointer.y = e.clientY;
-            this.updateHoverState();
+          window.addEventListener("orientationchange", () => {
+            setTimeout(() => this.handleResize(false), 120);
           });
+          if (window.visualViewport) {
+            window.visualViewport.addEventListener("resize", () =>
+              this.handleResize(false),
+            );
+          }
+
+          // Throttled pointermove / touchmove handler (36ms interval)
+          const handleThrottledMove = (clientX, clientY, isTouch) => {
+            const now = performance.now();
+            if (now - this.lastPointerMoveTime < this.moveThrottleMs) return;
+            this.lastPointerMoveTime = now;
+
+            if (!isTouch) {
+              this.pointer.x = clientX;
+              this.pointer.y = clientY;
+              this.updateHoverState();
+            }
+
+            // Spawn at most 1 gentle transient breeze petal from the pool on swipe/glide
+            if (!this.isModalOpen() && Math.random() < 0.45) {
+              this.spawnTransientBreezePetal(clientX, clientY);
+            }
+          };
+
+          this.canvas.addEventListener(
+            "pointermove",
+            (e) => {
+              handleThrottledMove(
+                e.clientX,
+                e.clientY,
+                e.pointerType === "touch",
+              );
+            },
+            { passive: true },
+          );
+
+          this.canvas.addEventListener(
+            "touchmove",
+            (e) => {
+              if (e.touches && e.touches.length > 0) {
+                const t = e.touches[0];
+                handleThrottledMove(t.clientX, t.clientY, true);
+              }
+            },
+            { passive: true },
+          );
 
           this.canvas.addEventListener("pointerleave", () => {
             this.pointer.x = -9999;
@@ -535,20 +1015,22 @@
             this.updateHoverState();
           });
 
-          this.canvas.addEventListener("click", (e) => {
+          this.canvas.addEventListener("pointerdown", (e) => {
             this.sound.unlock();
             this.pointer.x = e.clientX;
             this.pointer.y = e.clientY;
-            this.updateHoverState();
 
             if (this.isModalOpen()) return;
 
             if (
               this.state === "BLOOMING" &&
-              this.hoveredBlossom &&
+              !this.branchesBare &&
               !this.driftingBlossom
             ) {
-              this.releaseBlossom(this.hoveredBlossom);
+              const target = this.findClosestBlossom(e.clientX, e.clientY);
+              if (target) {
+                this.releaseBlossom(target);
+              }
             }
           });
 
@@ -580,32 +1062,96 @@
             .classList.contains("hidden");
         }
 
+        getViewportDimensions() {
+          const vv = window.visualViewport;
+          return {
+            w: vv ? vv.width : window.innerWidth,
+            h: vv ? vv.height : window.innerHeight,
+          };
+        }
+
+        /**
+         * Pre-render static luminous summer daylight backdrop onto an offscreen canvas
+         */
+        rebuildBackgroundCache() {
+          this.bgCanvas.width = Math.floor(this.width * this.dpr);
+          this.bgCanvas.height = Math.floor(this.height * this.dpr);
+
+          const bgCtx = this.bgCanvas.getContext("2d", { alpha: false });
+          bgCtx.setTransform(this.dpr, 0, 0, this.dpr, 0, 0);
+
+          const bgGrad = bgCtx.createLinearGradient(
+            0,
+            0,
+            this.width,
+            this.height,
+          );
+          bgGrad.addColorStop(0, "#FFFFFF");
+          bgGrad.addColorStop(0.55, "#FEFCFB");
+          bgGrad.addColorStop(1, "#FAF6F5");
+          bgCtx.fillStyle = bgGrad;
+          bgCtx.fillRect(0, 0, this.width, this.height);
+
+          const sunGrad = bgCtx.createRadialGradient(
+            this.width * 0.36,
+            this.height * 0.34,
+            10,
+            this.width * 0.36,
+            this.height * 0.34,
+            Math.max(this.width, this.height) * 0.65,
+          );
+          sunGrad.addColorStop(0, "rgba(255, 246, 248, 0.72)");
+          sunGrad.addColorStop(0.5, "rgba(252, 248, 246, 0.25)");
+          sunGrad.addColorStop(1, "rgba(255, 255, 255, 0)");
+          bgCtx.fillStyle = sunGrad;
+          bgCtx.fillRect(0, 0, this.width, this.height);
+        }
+
         handleResize(isInitial = false) {
-          this.width = window.innerWidth;
-          this.height = window.innerHeight;
+          const { w, h } = this.getViewportDimensions();
+          const prevW = this.width || w;
+          const prevH = this.height || h;
+          const prevDpr = this.dpr;
+
+          this.width = w;
+          this.height = h;
           this.dpr = Math.min(window.devicePixelRatio || 1, 2);
 
           this.canvas.width = Math.floor(this.width * this.dpr);
           this.canvas.height = Math.floor(this.height * this.dpr);
           this.ctx.setTransform(this.dpr, 0, 0, this.dpr, 0, 0);
+          this.ctx.imageSmoothingEnabled = true;
+          this.ctx.imageSmoothingQuality = "high";
 
+          if (this.dpr !== prevDpr) {
+            this.sprites.rebuild(this.dpr);
+          }
+          this.rebuildBackgroundCache();
           this.buildSakuraTree();
-          if (!isInitial) {
+
+          if (!isInitial && prevW > 0 && prevH > 0) {
+            const scaleX = this.width / prevW;
+            const scaleY = this.height / prevH;
+            for (const m of this.pollenMotes) {
+              m.x *= scaleX;
+              m.y *= scaleY;
+            }
+            this.petalPool.rescalePositions(scaleX, scaleY);
             this.updateHoverState();
           }
         }
 
         /**
-         * Initialize floating sunlit white/gold pollen motes & soft single sakura petals
+         * Initialize sunlit pollen motes & initial ambient single petals in Object Pool
          */
         initSummerAtmosphere() {
           this.pollenMotes = [];
-          const moteCount = this.width < 640 ? 28 : 48;
+          const moteCount = this.isLowEndDevice ? 24 : 42;
           for (let i = 0; i < moteCount; i++) {
             this.pollenMotes.push({
               x: Math.random() * this.width,
               y: Math.random() * this.height,
-              r: 1.4 + Math.random() * 2.6,
+              scale: 0.35 + Math.random() * 0.55,
               vx: 6 + Math.random() * 14,
               vy: -4 + Math.random() * 10,
               phase: Math.random() * Math.PI * 2,
@@ -613,72 +1159,83 @@
             });
           }
 
-          this.ambientPetals = [];
-          const petalCount = this.width < 640 ? 14 : 22;
-          for (let i = 0; i < petalCount; i++) {
-            this.ambientPetals.push(this.createSingleFallenPetal(true));
+          this.petalPool.clearAll();
+          const initialAmbient = Math.min(
+            this.maxActivePetals,
+            this.isLowEndDevice ? 14 : 22,
+          );
+          for (let i = 0; i < initialAmbient; i++) {
+            const p = this.petalPool.acquire();
+            if (p) {
+              this.configureSingleFallenPetal(p, true, true);
+            }
           }
         }
 
         /**
-         * Factory for an individual detached single sakura petal ("kelopak gugur putus")
+         * Configure/recycle a pooled single sakura petal in-place (zero allocations)
          */
-        createSingleFallenPetal(
+        configureSingleFallenPetal(
+          p,
+          persistent = true,
           randomScreenPos = false,
           originX = null,
           originY = null,
           burst = false,
         ) {
-          let x, y, vx, vy;
+          p.active = true;
+          p.persistent = persistent;
+
           if (originX !== null && originY !== null) {
-            x = originX + (Math.random() - 0.5) * 14;
-            y = originY + (Math.random() - 0.5) * 14;
+            p.x = originX + (Math.random() - 0.5) * 14;
+            p.y = originY + (Math.random() - 0.5) * 14;
             const ang = Math.random() * Math.PI * 2;
             const speed = burst
               ? 18 + Math.random() * 48
               : 12 + Math.random() * 24;
-            vx = Math.cos(ang) * speed + 22 + Math.random() * 26;
-            vy = Math.sin(ang) * speed * 0.65 + 10 + Math.random() * 18;
+            p.vx = Math.cos(ang) * speed + 22 + Math.random() * 26;
+            p.vy = Math.sin(ang) * speed * 0.65 + 10 + Math.random() * 18;
           } else if (randomScreenPos) {
-            x = Math.random() * this.width;
-            y = Math.random() * this.height;
-            vx = 16 + Math.random() * 22;
-            vy = 9 + Math.random() * 15;
+            p.x = Math.random() * this.width;
+            p.y = Math.random() * this.height;
+            p.vx = 16 + Math.random() * 22;
+            p.vy = 9 + Math.random() * 15;
           } else {
             // Re-enter gently from left or top edge on the warm summer breeze
             if (Math.random() < 0.52) {
-              x = -24 - Math.random() * 80;
-              y = Math.random() * this.height * 0.88;
+              p.x = -24 - Math.random() * 80;
+              p.y = Math.random() * this.height * 0.88;
             } else {
-              x = Math.random() * this.width * 0.92;
-              y = -24 - Math.random() * 60;
+              p.x = Math.random() * this.width * 0.92;
+              p.y = -24 - Math.random() * 60;
             }
-            vx = 18 + Math.random() * 24;
-            vy = 10 + Math.random() * 16;
+            p.vx = 18 + Math.random() * 24;
+            p.vy = 10 + Math.random() * 16;
           }
 
-          return {
-            x,
-            y,
-            vx,
-            vy,
-            size: 5.5 + Math.random() * 5.0,
-            rot: Math.random() * Math.PI * 2,
-            vRot: (Math.random() - 0.5) * 2.1,
-            flipPhase: Math.random() * Math.PI * 2,
-            flipSpeed: 1.5 + Math.random() * 2.0,
-            swayPhase: Math.random() * Math.PI * 2,
-            swayAmp: 12 + Math.random() * 18,
-            alpha: 0.85 + Math.random() * 0.15,
-            delay: burst ? Math.random() * 0.35 : 0,
-            tone: Math.floor(Math.random() * 3),
-          };
+          p.size = 5.5 + Math.random() * 5.0;
+          p.rot = Math.random() * Math.PI * 2;
+          p.vRot = (Math.random() - 0.5) * 2.1;
+          p.flipPhase = Math.random() * Math.PI * 2;
+          p.flipSpeed = 1.5 + Math.random() * 2.0;
+          p.swayPhase = Math.random() * Math.PI * 2;
+          p.swayAmp = 12 + Math.random() * 18;
+          p.alpha = 0.85 + Math.random() * 0.15;
+          p.delay = burst ? Math.random() * 0.35 : 0;
+          p.tone = Math.floor(Math.random() * 3);
+        }
+
+        spawnTransientBreezePetal(x, y) {
+          const p = this.petalPool.acquire();
+          if (!p) return;
+          this.configureSingleFallenPetal(p, false, false, x, y, false);
+          p.size = 4.5 + Math.random() * 3.5;
+          p.alpha = 0.78;
         }
 
         /**
          * ==========================================================================
-         * PROCEDURAL ZOOMED-IN SAKURA TREE (EXACT SILHOUETTE FROM REFERENCE)
-         * With tapered pointed branch tips ("ujung runcing") instead of blunt ends.
+         * PROCEDURAL ZOOMED-IN SAKURA TREE WITH SHARP POINTED BRANCH TIPS ("RUNCING")
          * ==========================================================================
          */
         buildSakuraTree() {
@@ -688,9 +1245,11 @@
 
           const W = this.width;
           const H = this.height;
+          const aspect = W / Math.max(1, H);
           const isMobile = W < 640;
+          const isPortrait = aspect < 0.9;
+          const isCompactHeight = H < 500;
 
-          // Deterministic PRNG for consistent organic branch silhouettes across resizes
           let seed = 7319;
           const rand = () => {
             seed = (seed * 16807) % 2147483647;
@@ -719,27 +1278,33 @@
             return branch;
           };
 
-          // 1. Thick zoomed-in trunk anchored off the left edge
+          const trunkStartY = isPortrait ? 0.85 : isCompactHeight ? 0.92 : 0.87;
+          const trunkEndX = isPortrait ? 0.23 : 0.22;
+          const trunkEndY = isPortrait ? 0.47 : isCompactHeight ? 0.52 : 0.46;
+
           const mainTrunk = addBranch({
-            p0: { x: -W * 0.06, y: H * (isMobile ? 0.84 : 0.87) },
-            p1: { x: W * 0.05, y: H * 0.66 },
-            p2: { x: W * 0.13, y: H * 0.53 },
-            p3: { x: W * (isMobile ? 0.24 : 0.22), y: H * 0.46 },
-            rStart: Math.max(48, Math.min(W, H) * 0.095),
-            rEnd: Math.max(20, Math.min(W, H) * 0.04),
+            p0: { x: -W * 0.06, y: H * trunkStartY },
+            p1: { x: W * 0.05, y: H * (isPortrait ? 0.67 : 0.66) },
+            p2: { x: W * 0.13, y: H * (isPortrait ? 0.54 : 0.53) },
+            p3: { x: W * trunkEndX, y: H * trunkEndY },
+            rStart: Math.max(36, Math.min(W, H) * 0.095),
+            rEnd: Math.max(15, Math.min(W, H) * 0.04),
             depth: 0,
             growStart: 0.0,
             growEnd: 0.32,
           });
 
-          // 2. Primary gnarled boughs extending across the center of the viewport
+          const reachBoost = isPortrait ? 0.11 : 0;
+          const topCeiling = isCompactHeight ? 0.22 : 0.18;
+          const bottomFloor = isCompactHeight ? 0.82 : 0.74;
+
           const primarySpecs = [
             {
               parent: mainTrunk,
               t: 0.88,
               c1: { x: W * 0.33, y: H * 0.35 },
               c2: { x: W * 0.49, y: H * 0.26 },
-              end: { x: W * (isMobile ? 0.8 : 0.68), y: H * 0.28 },
+              end: { x: W * (0.68 + reachBoost), y: H * 0.28 },
               rRatio: 0.78,
               gStart: 0.22,
               gEnd: 0.58,
@@ -749,7 +1314,7 @@
               t: 0.96,
               c1: { x: W * 0.36, y: H * 0.47 },
               c2: { x: W * 0.53, y: H * 0.51 },
-              end: { x: W * (isMobile ? 0.85 : 0.76), y: H * 0.44 },
+              end: { x: W * (0.76 + reachBoost * 0.8), y: H * 0.44 },
               rRatio: 0.84,
               gStart: 0.25,
               gEnd: 0.62,
@@ -759,7 +1324,7 @@
               t: 0.72,
               c1: { x: W * 0.29, y: H * 0.56 },
               c2: { x: W * 0.45, y: H * 0.64 },
-              end: { x: W * (isMobile ? 0.76 : 0.64), y: H * 0.62 },
+              end: { x: W * (0.64 + reachBoost), y: H * 0.62 },
               rRatio: 0.66,
               gStart: 0.2,
               gEnd: 0.55,
@@ -768,8 +1333,8 @@
               parent: mainTrunk,
               t: 0.56,
               c1: { x: W * 0.19, y: H * 0.33 },
-              c2: { x: W * 0.33, y: H * 0.2 },
-              end: { x: W * (isMobile ? 0.6 : 0.5), y: H * 0.18 },
+              c2: { x: W * 0.33, y: H * (topCeiling + 0.02) },
+              end: { x: W * (0.5 + reachBoost), y: H * topCeiling },
               rRatio: 0.62,
               gStart: 0.16,
               gEnd: 0.5,
@@ -778,8 +1343,8 @@
               parent: mainTrunk,
               t: 0.38,
               c1: { x: W * 0.18, y: H * 0.68 },
-              c2: { x: W * 0.32, y: H * 0.76 },
-              end: { x: W * (isMobile ? 0.56 : 0.46), y: H * 0.74 },
+              c2: { x: W * 0.32, y: H * (bottomFloor + 0.02) },
+              end: { x: W * (0.46 + reachBoost), y: H * bottomFloor },
               rRatio: 0.52,
               gStart: 0.14,
               gEnd: 0.48,
@@ -799,14 +1364,14 @@
               p2: cfg.c2,
               p3: cfg.end,
               rStart: baseR,
-              rEnd: 0, // Pointed tip ("runcing")
+              rEnd: 0,
               depth: 1,
               growStart: cfg.gStart,
               growEnd: cfg.gEnd,
             });
           });
 
-          // 3. Secondary & tertiary delicate twigs framing the central canopy
+          const spanScale = Math.sqrt(W * H);
           primaryBranches.forEach((pBranch, idx) => {
             const subCount = idx < 3 ? 4 : 3;
             for (let s = 0; s < subCount; s++) {
@@ -817,14 +1382,14 @@
 
               const side = (s % 2 === 0 ? -1 : 1) * (idx % 2 === 0 ? 1 : -1);
               const spreadAngle = baseAngle + side * (0.34 + rand() * 0.34);
-              const length = Math.min(W, H) * (0.14 + rand() * 0.11);
+              const length = spanScale * (0.115 + rand() * 0.085);
 
               const endX = Math.min(
-                W * 0.89,
-                Math.max(W * 0.15, origin.x + Math.cos(spreadAngle) * length),
+                W * 0.9,
+                Math.max(W * 0.14, origin.x + Math.cos(spreadAngle) * length),
               );
               const endY = Math.min(
-                H * 0.84,
+                H * 0.86,
                 Math.max(H * 0.15, origin.y + Math.sin(spreadAngle) * length),
               );
 
@@ -858,14 +1423,13 @@
                     Math.sin(spreadAngle + side * 0.12) * length * 0.78,
                 },
                 p3: { x: endX, y: endY },
-                rStart: Math.max(3.2, rAt),
-                rEnd: 0, // Pointed tip ("runcing")
+                rStart: Math.max(2.8, rAt),
+                rEnd: 0,
                 depth: 2,
                 growStart: gStart,
                 growEnd: gEnd,
               });
 
-              // Two fine terminal twigs per secondary branch
               for (let tw = 0; tw < 2; tw++) {
                 const twT = 0.46 + tw * 0.46;
                 const twOrigin = this.evalCubic(sec, twT);
@@ -873,15 +1437,15 @@
                 const twBaseAng = Math.atan2(twTan.y, twTan.x);
                 const twSide = tw === 0 ? -side : side;
                 const twAng = twBaseAng + twSide * (0.34 + rand() * 0.34);
-                const twLen = Math.min(W, H) * (0.065 + rand() * 0.055);
+                const twLen = spanScale * (0.052 + rand() * 0.042);
 
                 const twEnd = {
                   x: Math.min(
-                    W * 0.9,
-                    Math.max(W * 0.14, twOrigin.x + Math.cos(twAng) * twLen),
+                    W * 0.91,
+                    Math.max(W * 0.13, twOrigin.x + Math.cos(twAng) * twLen),
                   ),
                   y: Math.min(
-                    H * 0.85,
+                    H * 0.87,
                     Math.max(H * 0.14, twOrigin.y + Math.sin(twAng) * twLen),
                   ),
                 };
@@ -903,8 +1467,8 @@
                       Math.sin(twAng + twSide * 0.15) * twLen * 0.8,
                   },
                   p3: twEnd,
-                  rStart: 2.1,
-                  rEnd: 0, // Pointed tip ("runcing")
+                  rStart: 2.0,
+                  rEnd: 0,
                   depth: 3,
                   growStart: Math.min(0.82, gStart + 0.1),
                   growEnd: Math.min(0.92, gEnd + 0.12),
@@ -913,7 +1477,7 @@
             }
           });
 
-          // 4. Airy white-tipped & soft blush decorative blossoms along twigs
+          // Airy decorative blossoms linked to pre-baked sprite indices
           const twigBranches = this.branches.filter((b) => b.depth >= 2);
           twigBranches.forEach((b) => {
             const count = 2;
@@ -923,64 +1487,37 @@
               const offsetAng = rand() * Math.PI * 2;
               const offsetDist = 3 + rand() * 10;
 
-              const palettes = [
-                {
-                  tip: "#FFFFFF",
-                  mid: "#FADADD",
-                  center: "#F4A7B9",
-                  stamen: "#C99A4E",
-                },
-                {
-                  tip: "#FFFFFF",
-                  mid: "#FCE8EC",
-                  center: "#E67E96",
-                  stamen: "#C99A4E",
-                },
-                {
-                  tip: "#FFF9FA",
-                  mid: "#F4A7B9",
-                  center: "#FFFFFF",
-                  stamen: "#B8893E",
-                },
-                {
-                  tip: "#FFFFFF",
-                  mid: "#FADADD",
-                  center: "#FFFFFF",
-                  stamen: "#C99A4E",
-                },
-              ];
-              const pal = palettes[Math.floor(rand() * palettes.length)];
               this.decorativeBlossoms.push({
                 branchId: b.id,
                 t,
                 dx: Math.cos(offsetAng) * offsetDist,
                 dy: Math.sin(offsetAng) * offsetDist,
-                radius: (isMobile ? 7.5 : 9.5) + rand() * 5.5,
+                radius: (isMobile ? 7.0 : 9.2) + rand() * 5.0,
                 rotation: rand() * Math.PI * 2,
                 bloomStart: b.growEnd - 0.04 + rand() * 0.05,
-                palette: pal,
+                paletteIndex: Math.floor(rand() * DECORATIVE_PALETTES.length),
                 isBud: rand() < 0.16,
                 plucked: false,
-                regrowScale: 1,
-                hoverAmount: 0,
                 x: pos.x,
                 y: pos.y,
               });
             }
           });
 
-          // 5. Place all 10 distinct interactive blossoms with generous spacing across central twigs
           this.placeTenBlossoms(preservedPlucked);
         }
 
-        /**
-         * Selects 10 well-spaced anchor points along the central twigs so every
-         * blossom can be easily hovered and clicked without crowding.
-         */
         placeTenBlossoms(preservedPlucked) {
           const W = this.width;
           const H = this.height;
           const isMobile = W < 640;
+          const isTabletOrTouch = this.isTouchDevice || W <= 1024;
+          const isCompactHeight = H < 500;
+
+          const minY = isCompactHeight ? H * 0.24 : H * 0.18;
+          const maxY = isCompactHeight ? H * 0.86 : H * 0.82;
+          const minX = W * (isMobile ? 0.15 : 0.18);
+          const maxX = W * 0.87;
 
           const candidates = [];
           this.branches.forEach((b) => {
@@ -994,10 +1531,10 @@
             samples.forEach((t) => {
               const pt = this.evalCubic(b, t);
               if (
-                pt.x >= W * (isMobile ? 0.16 : 0.19) &&
-                pt.x <= W * 0.86 &&
-                pt.y >= H * 0.18 &&
-                pt.y <= H * 0.81
+                pt.x >= minX &&
+                pt.x <= maxX &&
+                pt.y >= minY &&
+                pt.y <= maxY
               ) {
                 candidates.push({
                   branchId: b.id,
@@ -1011,11 +1548,11 @@
           });
 
           const chosen = [];
-          let minDist = Math.min(W, H) * (isMobile ? 0.145 : 0.165);
+          let minDist = Math.sqrt(W * H) * (isMobile ? 0.115 : 0.125);
 
           candidates.sort((a, b) => a.x + a.y * 0.55 - (b.x + b.y * 0.55));
 
-          for (let pass = 0; pass < 8 && chosen.length < 10; pass++) {
+          for (let pass = 0; pass < 9 && chosen.length < 10; pass++) {
             for (let i = 0; i < candidates.length && chosen.length < 10; i++) {
               const c = candidates[i];
               if (chosen.includes(c)) continue;
@@ -1029,8 +1566,14 @@
             minDist *= 0.84;
           }
 
-          // Order naturally from upper-left across to lower-right (1..10)
           chosen.sort((a, b) => a.x * 0.68 + a.y - (b.x * 0.68 + b.y));
+
+          const baseR = isMobile
+            ? Math.max(14.5, Math.min(W, H) * 0.039)
+            : isTabletOrTouch
+              ? 18.0
+              : 18.5;
+          const hitR = isMobile ? 33 : isTabletOrTouch ? 35 : 29;
 
           this.interactiveBlossoms = THINGS_I_LIKE.map((itemObj, idx) => {
             const spot = chosen[idx % chosen.length];
@@ -1044,8 +1587,8 @@
               t: spot.t,
               dx: Math.cos(offAng) * offDist,
               dy: Math.sin(offAng) * offDist,
-              baseRadius: isMobile ? 16.0 : 18.5,
-              hitRadius: isMobile ? 31 : 29,
+              baseRadius: baseR,
+              hitRadius: hitR,
               rotation: (idx * 0.78) % (Math.PI * 2),
               bloomStart: Math.min(0.9, spot.bloomStart + (idx / 10) * 0.06),
               swayPhase: idx * 0.55,
@@ -1090,9 +1633,6 @@
           };
         }
 
-        /**
-         * Continuous, unhurried harmonic sway simulating a warm summer breeze
-         */
         computeAnimatedBranches(timeSec) {
           const computed = new Array(this.branches.length);
 
@@ -1123,11 +1663,11 @@
             }
 
             const totalAngle = parentAngle + swayAngle;
+            const cos = Math.cos(totalAngle);
+            const sin = Math.sin(totalAngle);
             const rotateRel = (pt) => {
               const rx = pt.x - b.p0.x;
               const ry = pt.y - b.p0.y;
-              const cos = Math.cos(totalAngle);
-              const sin = Math.sin(totalAngle);
               return {
                 x: p0.x + rx * cos - ry * sin,
                 y: p0.y + rx * sin + ry * cos,
@@ -1148,12 +1688,52 @@
           return computed;
         }
 
-        /**
-         * Preserved hover interaction and floating frosted-white tooltip
-         */
-        updateHoverState() {
-          const tooltip = document.getElementById("hoverTooltip");
+        findClosestBlossom(px, py) {
+          if (this.growthProgress < 0.72) return null;
+          let closest = null;
+          let closestDist = Infinity;
 
+          for (const flower of this.interactiveBlossoms) {
+            if (flower.plucked || flower.regrowScale < 0.65) continue;
+            const dist = Math.hypot(px - flower.x, py - flower.y);
+            if (dist <= flower.hitRadius && dist < closestDist) {
+              closest = flower;
+              closestDist = dist;
+            }
+          }
+          return closest;
+        }
+
+        /**
+         * 3. GPU-Composited Tooltip Positioning via translate3d (zero top/left reflow)
+         */
+        positionTooltip(flower) {
+          const headerEl = document.getElementById("topHeader");
+          const headerBottom = headerEl
+            ? headerEl.getBoundingClientRect().bottom
+            : 68;
+
+          const r = flower.baseRadius || 16;
+          const halfTipW = Math.max(
+            82,
+            (this.tooltipEl.offsetWidth || 164) * 0.5,
+          );
+          const safeX = Math.round(
+            Math.min(
+              this.width - halfTipW - 12,
+              Math.max(halfTipW + 12, flower.x),
+            ),
+          );
+          const safeY = Math.round(Math.max(headerBottom + 36, flower.y - r - 8));
+
+          if (safeX !== this.lastTooltipX || safeY !== this.lastTooltipY) {
+            this.lastTooltipX = safeX;
+            this.lastTooltipY = safeY;
+            this.tooltipEl.style.transform = `translate3d(${safeX}px, ${safeY}px, 0) translate3d(-50%, -100%, 0)`;
+          }
+        }
+
+        updateHoverState() {
           if (
             this.growthProgress < 0.72 ||
             this.isModalOpen() ||
@@ -1163,25 +1743,14 @@
           ) {
             this.hoveredBlossom = null;
             this.canvas.style.cursor = "default";
-            tooltip.style.opacity = "0";
+            this.tooltipEl.style.opacity = "0";
             return;
           }
 
-          let closest = null;
-          let closestDist = Infinity;
-
-          for (const flower of this.interactiveBlossoms) {
-            if (flower.plucked || flower.regrowScale < 0.65) continue;
-            const dist = Math.hypot(
-              this.pointer.x - flower.x,
-              this.pointer.y - flower.y,
-            );
-            if (dist <= flower.hitRadius && dist < closestDist) {
-              closest = flower;
-              closestDist = dist;
-            }
-          }
-
+          const closest = this.findClosestBlossom(
+            this.pointer.x,
+            this.pointer.y,
+          );
           this.hoveredBlossom = closest;
 
           if (closest) {
@@ -1190,31 +1759,27 @@
               `#${String(closest.indexNumber).padStart(2, "0")}`;
             document.getElementById("tooltipLabel").textContent =
               "Touch to release petal";
-            const r = closest.baseRadius || 16;
-            tooltip.style.left = `${closest.x}px`;
-            tooltip.style.top = `${Math.max(76, closest.y - r - 8)}px`;
-            tooltip.style.opacity = "1";
+            this.positionTooltip(closest);
+            this.tooltipEl.style.opacity = "1";
           } else {
             this.canvas.style.cursor = "default";
-            tooltip.style.opacity = "0";
+            this.tooltipEl.style.opacity = "0";
           }
         }
 
-        /**
-         * Smooth, gentle warm-summer-breeze detachment toward the viewer
-         */
         releaseBlossom(flower) {
           flower.plucked = true;
           this.pluckedIds.add(flower.item.id);
           this.releasedIds.add(flower.item.id);
+          this.pointer.x = -9999;
+          this.pointer.y = -9999;
           this.updateCounterUI();
           this.updateHoverState();
 
           this.sound.playWarmBreezeLift();
           this.breezeWave = 1.0;
 
-          // Subtle sunlit warm air currents drifting gently across the white canvas
-          for (let i = 0; i < 8; i++) {
+          for (let i = 0; i < 6; i++) {
             this.breezeRibbons.push({
               x: flower.x - 140 - Math.random() * 180,
               y: flower.y + (Math.random() - 0.5) * this.height * 0.45,
@@ -1229,7 +1794,12 @@
             });
           }
 
-          // Initialize unhurried warm-breeze petal drift
+          const maxTargetRadius = Math.min(this.width, this.height) * 0.15;
+          const targetScale = Math.max(
+            2.4,
+            Math.min(3.8, maxTargetRadius / Math.max(12, flower.baseRadius)),
+          );
+
           this.driftingBlossom = {
             flower,
             startX: flower.x,
@@ -1237,6 +1807,7 @@
             x: flower.x,
             y: flower.y,
             scale: 1.0,
+            targetScale,
             elapsed: 0,
             duration: 2.45,
             rotZ: flower.rotation,
@@ -1285,8 +1856,8 @@
         }
 
         /**
-         * At 10/10: break apart all blossoms on the branches into individual single
-         * detached petals ("kelopak gugur putus") that persist and keep drifting
+         * At 10/10: fill the Object Pool (bounded by maxActivePetals: 50 low-end / 110 high-end)
+         * with persistent single fallen petals ("kelopak gugur putus")
          */
         triggerFinalPetalScatter() {
           this.state = "SCATTERED";
@@ -1296,25 +1867,43 @@
           this.canvas.style.cursor = "default";
           this.sound.playScatterWhisper();
 
-          this.scatteredPetals = [];
+          this.petalPool.clearAll();
 
-          // Break every decorative blossom & bud into individual single fallen petals
-          for (const db of this.decorativeBlossoms) {
-            const count = db.isBud ? 2 : 5;
-            for (let k = 0; k < count; k++) {
-              this.scatteredPetals.push(
-                this.createSingleFallenPetal(false, db.x, db.y, true),
+          // Spawn burst petals from branch blossom positions up to 65% of pool capacity
+          const burstBudget = Math.floor(this.maxActivePetals * 0.65);
+          let spawned = 0;
+
+          for (
+            let i = 0;
+            i < this.decorativeBlossoms.length && spawned < burstBudget;
+            i++
+          ) {
+            const db = this.decorativeBlossoms[i];
+            const perBlossom = db.isBud ? 1 : 2;
+            for (let k = 0; k < perBlossom && spawned < burstBudget; k++) {
+              const p = this.petalPool.acquire();
+              if (!p) break;
+              this.configureSingleFallenPetal(
+                p,
+                true,
+                false,
+                db.x,
+                db.y,
+                true,
               );
+              spawned++;
             }
           }
 
-          // Add continuous ambient single fallen petals so the breeze stays lush indefinitely
-          for (let i = 0; i < 48; i++) {
-            this.scatteredPetals.push(this.createSingleFallenPetal(true));
+          // Fill the remaining pool capacity with continuous ambient single fallen petals
+          while (spawned < this.maxActivePetals) {
+            const p = this.petalPool.acquire();
+            if (!p) break;
+            this.configureSingleFallenPetal(p, true, true);
+            spawned++;
           }
 
-          // Warm breeze ribbons sweeping across the bare pointed branches
-          for (let i = 0; i < 12; i++) {
+          for (let i = 0; i < 10; i++) {
             this.breezeRibbons.push({
               x: -100 - Math.random() * 200,
               y: this.height * (0.18 + Math.random() * 0.64),
@@ -1345,14 +1934,12 @@
             this.breezeWave = Math.max(0, this.breezeWave - dt * 0.34);
           }
 
-          // Smooth hover easing for the 10 blossoms
           for (const f of this.interactiveBlossoms) {
             const targetHover = this.hoveredBlossom === f ? 1 : 0;
             f.hoverAmount +=
               (targetHover - f.hoverAmount) * Math.min(1, dt * 9);
           }
 
-          // Sunlit summer pollen motes drifting peacefully
           for (const m of this.pollenMotes) {
             m.phase += dt * 1.1;
             m.x += (m.vx + Math.sin(m.phase) * 6) * dt;
@@ -1364,43 +1951,45 @@
             if (m.y < -20) m.y = this.height + 20;
           }
 
-          // Ambient single sakura petals floating in summer air
-          const breezeMult = 1 + this.breezeWave * 1.35;
-          for (let i = 0; i < this.ambientPetals.length; i++) {
-            const p = this.ambientPetals[i];
-            p.swayPhase += dt * 1.5;
+          // Update all active petals in the Object Pool and recycle in-place at viewport edges
+          const breezeMult =
+            this.state === "SCATTERED" ? 1.15 : 1 + this.breezeWave * 1.35;
+          const poolItems = this.petalPool.items;
+          const poolCap = this.petalPool.capacity;
+
+          for (let i = 0; i < poolCap; i++) {
+            const p = poolItems[i];
+            if (!p.active) continue;
+
+            if (p.delay > 0) {
+              p.delay -= dt;
+              continue;
+            }
+
+            p.swayPhase += dt * 1.65;
             p.flipPhase += dt * p.flipSpeed;
-            p.x += (p.vx * breezeMult + Math.sin(p.swayPhase) * 11) * dt;
-            p.y += (p.vy + Math.cos(p.swayPhase * 0.75) * 7) * dt;
+
+            if (this.state === "SCATTERED") {
+              p.vx += (22 - p.vx) * Math.min(1, dt * 0.85);
+              p.vy += (14 - p.vy) * Math.min(1, dt * 0.85);
+            }
+
+            p.x +=
+              (p.vx * breezeMult + Math.sin(p.swayPhase) * p.swayAmp * 0.65) *
+              dt;
+            p.y += (p.vy + Math.cos(p.swayPhase * 0.8) * 8.5) * dt;
             p.rot += p.vRot * dt;
 
-            if (p.x > this.width + 32 || p.y > this.height + 32) {
-              this.ambientPetals[i] = this.createSingleFallenPetal(false);
-            }
-          }
-
-          // Persistent single fallen petals ("kelopak gugur putus") after 10/10
-          if (this.scatteredPetals.length > 0) {
-            for (let i = 0; i < this.scatteredPetals.length; i++) {
-              const sp = this.scatteredPetals[i];
-              if (sp.delay > 0) {
-                sp.delay -= dt;
-                continue;
-              }
-              sp.swayPhase += dt * 1.75;
-              sp.flipPhase += dt * sp.flipSpeed;
-
-              // Settle smoothly from initial scatter burst into steady warm summer breeze
-              sp.vx += (22 - sp.vx) * Math.min(1, dt * 0.85);
-              sp.vy += (14 - sp.vy) * Math.min(1, dt * 0.85);
-
-              sp.x += (sp.vx + Math.sin(sp.swayPhase) * sp.swayAmp * 0.65) * dt;
-              sp.y += (sp.vy + Math.cos(sp.swayPhase * 0.8) * 9) * dt;
-              sp.rot += sp.vRot * dt;
-
-              // Continuously circulate fallen single petals across the screen
-              if (sp.x > this.width + 36 || sp.y > this.height + 36) {
-                this.scatteredPetals[i] = this.createSingleFallenPetal(false);
+            // Recycle or release immediately when exiting viewport
+            if (
+              p.x > this.width + 36 ||
+              p.y > this.height + 36 ||
+              p.x < -140
+            ) {
+              if (p.persistent) {
+                this.configureSingleFallenPetal(p, true, false);
+              } else {
+                this.petalPool.release(p);
               }
             }
           }
@@ -1416,23 +2005,26 @@
             }
           }
 
-          // Smooth, unhurried warm-summer-breeze petal drift toward the viewer
+          // Smooth warm-summer-breeze petal drift toward the viewer
           if (this.driftingBlossom) {
             const db = this.driftingBlossom;
             db.elapsed += dt;
             const t = Math.min(1, db.elapsed / db.duration);
 
             const ease = 0.5 - 0.5 * Math.cos(t * Math.PI);
-            const liftArc = Math.sin(t * Math.PI) * 52;
+            const liftArc =
+              Math.sin(t * Math.PI) * Math.min(52, this.height * 0.08);
             const sCurve =
-              Math.sin(t * Math.PI * 1.5 + db.phase) * 34 * db.sCurveDir;
+              Math.sin(t * Math.PI * 1.5 + db.phase) *
+              Math.min(34, this.width * 0.05) *
+              db.sCurveDir;
 
             const targetX = this.width * 0.5;
-            const targetY = this.height * 0.48;
+            const targetY = this.height * 0.5;
 
             db.x = db.startX + (targetX - db.startX) * ease + sCurve;
             db.y = db.startY + (targetY - db.startY) * ease - liftArc;
-            db.scale = 1.0 + ease * 2.8;
+            db.scale = 1.0 + ease * (db.targetScale - 1.0);
 
             db.rotZ +=
               (0.85 + Math.sin(t * Math.PI) * 0.65) * db.sCurveDir * dt;
@@ -1448,54 +2040,35 @@
         }
 
         /**
-         * Draw luminous white summer daylight background & drifting pollen motes
+         * Blit pre-rendered background canvas & draw cached pollen motes
          */
         drawBackground() {
           const ctx = this.ctx;
+          ctx.drawImage(this.bgCanvas, 0, 0, this.width, this.height);
 
-          const bgGrad = ctx.createLinearGradient(
-            0,
-            0,
-            this.width,
-            this.height,
-          );
-          bgGrad.addColorStop(0, "#FFFFFF");
-          bgGrad.addColorStop(0.55, "#FEFCFB");
-          bgGrad.addColorStop(1, "#FAF6F5");
-          ctx.fillStyle = bgGrad;
-          ctx.fillRect(0, 0, this.width, this.height);
+          const goldSprite = this.sprites.pollenSprites.gold;
+          const blushSprite = this.sprites.pollenSprites.blush;
 
-          const sunGrad = ctx.createRadialGradient(
-            this.width * 0.36,
-            this.height * 0.34,
-            10,
-            this.width * 0.36,
-            this.height * 0.34,
-            Math.max(this.width, this.height) * 0.65,
-          );
-          sunGrad.addColorStop(0, "rgba(255, 246, 248, 0.72)");
-          sunGrad.addColorStop(0.5, "rgba(252, 248, 246, 0.25)");
-          sunGrad.addColorStop(1, "rgba(255, 255, 255, 0)");
-          ctx.fillStyle = sunGrad;
-          ctx.fillRect(0, 0, this.width, this.height);
-
-          for (const m of this.pollenMotes) {
+          for (let i = 0; i < this.pollenMotes.length; i++) {
+            const m = this.pollenMotes[i];
             const pulse = 0.45 + 0.55 * Math.sin(m.phase * 1.4);
-            ctx.save();
-            ctx.beginPath();
-            ctx.arc(m.x, m.y, m.r, 0, Math.PI * 2);
-            ctx.fillStyle = m.isGold
-              ? `rgba(214, 174, 108, ${0.22 * pulse})`
-              : `rgba(244, 167, 185, ${0.26 * pulse})`;
-            ctx.fill();
-            ctx.restore();
+            const drawSize = 14 * m.scale;
+            const half = drawSize * 0.5;
+            ctx.globalAlpha = pulse;
+            ctx.drawImage(
+              m.isGold ? goldSprite : blushSprite,
+              m.x - half,
+              m.y - half,
+              drawSize,
+              drawSize,
+            );
           }
+          ctx.globalAlpha = 1;
         }
 
         /**
-         * ==========================================================================
-         * DRAW TAPERED ORGANIC SAKURA TRUNK, BOUGHS & TWIGS WITH POINTED TIPS ("RUNCING")
-         * ==========================================================================
+         * Draw tapered organic sakura trunk, boughs & twigs with pointed tips ("runcing")
+         * Uses zero per-frame shadowBlur for smooth 60 FPS mobile performance.
          */
         drawBranches(computedBranches) {
           const ctx = this.ctx;
@@ -1504,7 +2077,7 @@
             const b = computedBranches[i];
             if (b.grow <= 0.002) continue;
 
-            const steps = b.depth === 0 ? 30 : b.depth === 1 ? 24 : 16;
+            const steps = b.depth === 0 ? 28 : b.depth === 1 ? 22 : 14;
             const leftPts = [];
             const rightPts = [];
             let tipApex = null;
@@ -1520,7 +2093,6 @@
               const nx = -ty;
               const ny = tx;
 
-              // Natural taper that narrows to a sharp, pointed tip (radius = 0) at the end
               let radius;
               if (b.depth === 0) {
                 const growthTip =
@@ -1529,14 +2101,12 @@
                   (b.rStart + (b.rEnd - b.rStart) * t) *
                   (0.35 + 0.65 * growthTip);
               } else {
-                // Smooth botanical taper reaching 0 at frac = 1 so every branch tip is pointed ("runcing")
                 const lengthTaper = Math.pow(Math.max(0, 1 - t), 0.78);
                 const tipPoint = Math.pow(Math.max(0, 1 - frac), 0.62);
                 radius = b.rStart * lengthTaper * tipPoint;
               }
 
               if (s === steps && b.depth >= 1) {
-                // Sharp pointed botanical apex extending slightly along the tangent
                 const needleExtend = Math.min(7.5, b.rStart * 0.34) * b.grow;
                 tipApex = {
                   x: pt.x + tx * needleExtend,
@@ -1548,25 +2118,7 @@
               }
             }
 
-            ctx.save();
-            if (b.depth <= 1) {
-              ctx.shadowColor = "rgba(60, 45, 50, 0.09)";
-              ctx.shadowBlur = 14;
-              ctx.shadowOffsetX = 4;
-              ctx.shadowOffsetY = 8;
-            }
-
-            const barkGrad = ctx.createLinearGradient(
-              b.p0.x,
-              b.p0.y,
-              b.p3.x,
-              b.p3.y,
-            );
-            barkGrad.addColorStop(0, "#3F3134");
-            barkGrad.addColorStop(0.55, "#59474A");
-            barkGrad.addColorStop(1, "#735D61");
-
-            ctx.fillStyle = barkGrad;
+            // Build branch silhouette path once
             ctx.beginPath();
             ctx.moveTo(leftPts[0].x, leftPts[0].y);
             for (let s = 1; s < leftPts.length; s++) {
@@ -1579,11 +2131,30 @@
               ctx.lineTo(rightPts[s].x, rightPts[s].y);
             }
             ctx.closePath();
+
+            // Lightweight soft depth shadow on primary boughs without GPU shadowBlur
+            if (b.depth <= 1) {
+              ctx.save();
+              ctx.translate(3, 7);
+              ctx.fillStyle = "rgba(60, 45, 50, 0.055)";
+              ctx.fill();
+              ctx.restore();
+            }
+
+            const barkGrad = ctx.createLinearGradient(
+              b.p0.x,
+              b.p0.y,
+              b.p3.x,
+              b.p3.y,
+            );
+            barkGrad.addColorStop(0, "#3F3134");
+            barkGrad.addColorStop(0.55, "#59474A");
+            barkGrad.addColorStop(1, "#735D61");
+            ctx.fillStyle = barkGrad;
             ctx.fill();
 
             // Subtle warm sunlit rim highlight along upper contour of main boughs
             if (b.depth <= 1 && rightPts.length > 2) {
-              ctx.shadowColor = "transparent";
               ctx.beginPath();
               ctx.moveTo(rightPts[0].x, rightPts[0].y);
               for (let s = 1; s < rightPts.length; s++) {
@@ -1597,132 +2168,46 @@
               ctx.lineCap = "round";
               ctx.stroke();
             }
-
-            ctx.restore();
           }
         }
 
         /**
-         * Draw 5-petal sakura blossom (white-centered & white-tipped with blush)
+         * Helper to stamp a pre-rendered Offscreen Canvas sprite cleanly
          */
-        drawSakuraBlossom(x, y, radius, rotation, palette, options = {}) {
+        drawCachedSprite(
+          spriteObj,
+          x,
+          y,
+          radius,
+          rotation,
+          scaleX = 1,
+          scaleY = 1,
+          alpha = 1,
+        ) {
           const ctx = this.ctx;
-          const {
-            scaleX = 1,
-            scaleY = 1,
-            alpha = 1,
-            isInteractive = false,
-            hoverBoost = 0,
-            shadowOffsetY = 5,
-            shadowBlur = 10,
-            shadowAlpha = 0.09,
-          } = options;
+          const drawSize = radius * spriteObj.ratio;
+          const half = drawSize * 0.5;
 
           ctx.save();
           ctx.translate(x, y);
-          ctx.rotate(rotation);
-          ctx.scale(scaleX, scaleY);
-          ctx.globalAlpha = alpha;
-
-          ctx.shadowColor = `rgba(60, 45, 50, ${shadowAlpha + hoverBoost * 0.05})`;
-          ctx.shadowBlur = shadowBlur + hoverBoost * 6;
-          ctx.shadowOffsetX = shadowOffsetY * 0.35;
-          ctx.shadowOffsetY = shadowOffsetY;
-
-          for (let p = 0; p < 5; p++) {
-            ctx.save();
-            ctx.rotate((p * Math.PI * 2) / 5);
-
-            const pGrad = ctx.createRadialGradient(
-              0,
-              -radius * 0.12,
-              radius * 0.05,
-              0,
-              -radius * 0.55,
-              radius * 1.02,
-            );
-            pGrad.addColorStop(0, palette.center);
-            pGrad.addColorStop(0.46, palette.mid);
-            pGrad.addColorStop(0.88, palette.tip);
-            pGrad.addColorStop(1, "#FFFFFF");
-
-            ctx.fillStyle = pGrad;
-            ctx.beginPath();
-            ctx.moveTo(0, 0);
-            ctx.bezierCurveTo(
-              -radius * 0.44,
-              -radius * 0.25,
-              -radius * 0.52,
-              -radius * 0.78,
-              -radius * 0.14,
-              -radius * 0.98,
-            );
-            ctx.lineTo(0, -radius * 0.85);
-            ctx.lineTo(radius * 0.14, -radius * 0.98);
-            ctx.bezierCurveTo(
-              radius * 0.52,
-              -radius * 0.78,
-              radius * 0.44,
-              -radius * 0.25,
-              0,
-              0,
-            );
-            ctx.closePath();
-            ctx.fill();
-
-            ctx.shadowColor = "transparent";
-            ctx.strokeStyle = isInteractive
-              ? `rgba(230, 126, 150, ${0.42 + hoverBoost * 0.28})`
-              : "rgba(244, 167, 185, 0.38)";
-            ctx.lineWidth = isInteractive ? 0.95 : 0.7;
-            ctx.stroke();
-
-            ctx.restore();
-          }
-
-          ctx.shadowColor = "transparent";
-
-          ctx.fillStyle = isInteractive ? "#FFFFFF" : "#FADADD";
-          ctx.beginPath();
-          ctx.arc(0, 0, radius * 0.17, 0, Math.PI * 2);
-          ctx.fill();
-          ctx.strokeStyle = "rgba(230, 126, 150, 0.45)";
-          ctx.lineWidth = 0.65;
-          ctx.stroke();
-
-          const stamenCount = isInteractive ? 9 : 6;
-          for (let s = 0; s < stamenCount; s++) {
-            const ang = (s * Math.PI * 2) / stamenCount + 0.25;
-            const sLen = radius * (0.28 + (s % 2) * 0.09);
-            const sx = Math.cos(ang) * sLen;
-            const sy = Math.sin(ang) * sLen;
-
-            ctx.beginPath();
-            ctx.moveTo(0, 0);
-            ctx.lineTo(sx, sy);
-            ctx.strokeStyle = "rgba(230, 126, 150, 0.55)";
-            ctx.lineWidth = 0.65;
-            ctx.stroke();
-
-            ctx.fillStyle = palette.stamen || "#C99A4E";
-            ctx.beginPath();
-            ctx.arc(sx, sy, Math.max(0.9, radius * 0.055), 0, Math.PI * 2);
-            ctx.fill();
-          }
-
+          if (rotation !== 0) ctx.rotate(rotation);
+          if (scaleX !== 1 || scaleY !== 1) ctx.scale(scaleX, scaleY);
+          if (alpha !== 1) ctx.globalAlpha = alpha;
+          ctx.drawImage(spriteObj.canvas, -half, -half, drawSize, drawSize);
           ctx.restore();
         }
 
         /**
-         * Draw decorative blossoms + the 10 interactive blossoms along the central twigs
+         * Draw decorative blossoms & 10 interactive blossoms using Offscreen Sprite Cache
          */
         drawTreeBlossoms(computedBranches, timeSec) {
           if (this.branchesBare) return;
 
           const ctx = this.ctx;
 
-          // 1. Airy decorative blossoms
-          for (const db of this.decorativeBlossoms) {
+          // 1. Airy decorative blossoms (blitted from offscreen sprites)
+          for (let i = 0; i < this.decorativeBlossoms.length; i++) {
+            const db = this.decorativeBlossoms[i];
             if (db.plucked) continue;
             const rawBloom = (this.growthProgress - db.bloomStart) / 0.18;
             if (rawBloom <= 0) continue;
@@ -1736,53 +2221,25 @@
             db.x = anchor.x + db.dx;
             db.y = anchor.y + db.dy;
 
-            if (db.isBud) {
-              ctx.save();
-              ctx.translate(db.x, db.y);
-              ctx.rotate(db.rotation + flutter);
-              ctx.scale(easeBloom, easeBloom);
-              ctx.fillStyle = "#FADADD";
-              ctx.strokeStyle = "rgba(230, 126, 150, 0.45)";
-              ctx.lineWidth = 0.75;
-              ctx.beginPath();
-              ctx.ellipse(
-                0,
-                0,
-                db.radius * 0.34,
-                db.radius * 0.56,
-                0,
-                0,
-                Math.PI * 2,
-              );
-              ctx.fill();
-              ctx.stroke();
-              ctx.restore();
-            } else {
-              this.drawSakuraBlossom(
-                db.x,
-                db.y,
-                db.radius * easeBloom,
-                db.rotation + flutter,
-                db.palette,
-                {
-                  alpha: 0.92,
-                  shadowOffsetY: 3,
-                  shadowBlur: 6,
-                  shadowAlpha: 0.06,
-                },
-              );
-            }
+            const sprite = db.isBud
+              ? this.sprites.budSprite
+              : this.sprites.decorativeBlossoms[db.paletteIndex];
+
+            this.drawCachedSprite(
+              sprite,
+              db.x,
+              db.y,
+              db.radius * easeBloom,
+              db.rotation + flutter,
+              1,
+              1,
+              0.94,
+            );
           }
 
           // 2. The 10 Interactive Blossoms
-          const interactivePalette = {
-            center: "#FFFFFF",
-            mid: "#FADADD",
-            tip: "#FFFFFF",
-            stamen: "#C99A4E",
-          };
-
-          for (const ib of this.interactiveBlossoms) {
+          for (let i = 0; i < this.interactiveBlossoms.length; i++) {
+            const ib = this.interactiveBlossoms[i];
             const branch = computedBranches[ib.branchId];
             const anchor = this.evalCubic(branch, ib.t);
             ib.x = anchor.x + ib.dx;
@@ -1793,7 +2250,6 @@
 
             // Subtle tiny stem node left behind once a blossom has detached
             if (ib.plucked) {
-              ctx.save();
               ctx.fillStyle = "#735D61";
               ctx.beginPath();
               ctx.arc(ib.x, ib.y, 2.1, 0, Math.PI * 2);
@@ -1802,7 +2258,6 @@
               ctx.beginPath();
               ctx.arc(ib.x, ib.y, 1.0, 0, Math.PI * 2);
               ctx.fill();
-              ctx.restore();
               continue;
             }
 
@@ -1825,7 +2280,6 @@
 
             // Delicate frosted-blush ring indicating interactivity
             if (bloomT >= 0.88 && ib.regrowScale >= 0.95) {
-              ctx.save();
               ctx.beginPath();
               ctx.arc(
                 ib.x,
@@ -1837,119 +2291,51 @@
               ctx.strokeStyle = `rgba(230, 126, 150, ${0.18 + gentleBreathe * 0.14 + hoverBoost * 0.36})`;
               ctx.lineWidth = 0.9 + hoverBoost * 0.7;
               ctx.stroke();
-              ctx.restore();
             }
 
-            this.drawSakuraBlossom(
-              ib.x,
-              ib.y,
-              radius,
-              flutter,
-              interactivePalette,
-              {
-                alpha: 1,
-                isInteractive: true,
-                hoverBoost,
-                shadowOffsetY: 5 + hoverBoost * 4,
-                shadowBlur: 10 + hoverBoost * 6,
-                shadowAlpha: 0.09,
-              },
-            );
+            const sprite =
+              hoverBoost > 0.35
+                ? this.sprites.interactiveBlossomHover
+                : this.sprites.interactiveBlossom;
+
+            this.drawCachedSprite(sprite, ib.x, ib.y, radius, flutter, 1, 1, 1);
           }
         }
 
         /**
-         * Draw a single detached sakura petal ("kelopak tunggal gugur putus") — NOT a whole flower
-         */
-        drawSingleFallenPetal(p) {
-          if (p.delay > 0) return;
-          const ctx = this.ctx;
-          const flipScale = 0.42 + 0.58 * Math.abs(Math.cos(p.flipPhase));
-          const s = p.size;
-
-          ctx.save();
-          ctx.translate(p.x, p.y);
-          ctx.rotate(p.rot);
-          ctx.scale(1, flipScale);
-          ctx.globalAlpha = p.alpha;
-
-          ctx.shadowColor = "rgba(60, 45, 50, 0.07)";
-          ctx.shadowBlur = 6;
-          ctx.shadowOffsetY = 4;
-
-          const grad = ctx.createRadialGradient(
-            0,
-            s * 0.25,
-            0.5,
-            0,
-            0,
-            s * 1.1,
-          );
-          if (p.tone === 0) {
-            grad.addColorStop(0, "#F8C8D6");
-            grad.addColorStop(0.65, "#FADADD");
-            grad.addColorStop(1, "#FFFFFF");
-          } else if (p.tone === 1) {
-            grad.addColorStop(0, "#F4A7B9");
-            grad.addColorStop(0.6, "#FCE8EE");
-            grad.addColorStop(1, "#FFFFFF");
-          } else {
-            grad.addColorStop(0, "#FADADD");
-            grad.addColorStop(0.7, "#FFF6F8");
-            grad.addColorStop(1, "#FFFFFF");
-          }
-
-          ctx.fillStyle = grad;
-          ctx.beginPath();
-          // Pointed base of single sakura petal
-          ctx.moveTo(0, s);
-          ctx.bezierCurveTo(
-            -s * 0.72,
-            s * 0.35,
-            -s * 0.78,
-            -s * 0.62,
-            -s * 0.2,
-            -s * 0.98,
-          );
-          // Signature sakura petal tip cleft
-          ctx.lineTo(0, -s * 0.76);
-          ctx.lineTo(s * 0.2, -s * 0.98);
-          ctx.bezierCurveTo(s * 0.78, -s * 0.62, s * 0.72, s * 0.35, 0, s);
-          ctx.closePath();
-          ctx.fill();
-
-          ctx.shadowColor = "transparent";
-          ctx.strokeStyle = "rgba(230, 138, 166, 0.42)";
-          ctx.lineWidth = 0.68;
-          ctx.stroke();
-
-          ctx.restore();
-        }
-
-        /**
-         * Draw ambient single petals, scattered single fallen petals (at 10/10),
-         * warm breeze ribbons, and active detached blossom gliding in 3D
+         * Draw pooled single petals, breeze ribbons, and active detached blossom
          */
         drawSummerBreezeAndFlight(timeSec) {
           const ctx = this.ctx;
 
-          // 1. Ambient single sakura petals drifting lazily across the white sky
-          for (const p of this.ambientPetals) {
-            this.drawSingleFallenPetal(p);
+          // 1. Render all active single sakura petals from the Object Pool via drawImage()
+          const poolItems = this.petalPool.items;
+          const poolCap = this.petalPool.capacity;
+          for (let i = 0; i < poolCap; i++) {
+            const p = poolItems[i];
+            if (!p.active || p.delay > 0) continue;
+
+            const flipScale = 0.42 + 0.58 * Math.abs(Math.cos(p.flipPhase));
+            const sprite = this.sprites.singlePetals[p.tone];
+            this.drawCachedSprite(
+              sprite,
+              p.x,
+              p.y,
+              p.size,
+              p.rot,
+              1,
+              flipScale,
+              p.alpha,
+            );
           }
 
-          // 2. Persistent scattered single fallen petals ("kelopak gugur putus") after 10/10
-          for (const sp of this.scatteredPetals) {
-            this.drawSingleFallenPetal(sp);
-          }
-
-          // 3. Delicate warm summer breeze ribbons
-          for (const r of this.breezeRibbons) {
+          // 2. Delicate warm summer breeze ribbons
+          for (let i = 0; i < this.breezeRibbons.length; i++) {
+            const r = this.breezeRibbons[i];
             const progress = r.life / r.maxLife;
             const fade = Math.sin(progress * Math.PI);
-            ctx.save();
             ctx.beginPath();
-            const segments = 18;
+            const segments = 16;
             for (let s = 0; s <= segments; s++) {
               const st = s / segments;
               const px = r.x + st * r.length;
@@ -1962,10 +2348,9 @@
             ctx.lineWidth = 1.25;
             ctx.lineCap = "round";
             ctx.stroke();
-            ctx.restore();
           }
 
-          // 4. Detached blossom gliding gracefully toward the viewer (1x -> 3.8x)
+          // 3. Detached blossom gliding gracefully toward the viewer (using high-res sprite)
           if (this.driftingBlossom) {
             const db = this.driftingBlossom;
             const t = Math.min(1, db.elapsed / db.duration);
@@ -1974,29 +2359,16 @@
             const foreshortenX = Math.max(0.55, Math.cos(db.rotY));
             const foreshortenY = Math.max(0.55, Math.cos(db.rotX));
             const foregroundAlpha = t > 0.84 ? 1 - (t - 0.84) / 0.16 : 1;
-            const elevation = (db.scale - 1) / 2.8;
 
-            this.drawSakuraBlossom(
+            this.drawCachedSprite(
+              this.sprites.interactiveBlossomHover,
               db.x,
               db.y,
               radius,
               db.rotZ,
-              {
-                center: "#FFFFFF",
-                mid: "#FADADD",
-                tip: "#FFFFFF",
-                stamen: "#C99A4E",
-              },
-              {
-                scaleX: foreshortenX,
-                scaleY: foreshortenY,
-                alpha: Math.max(0, foregroundAlpha),
-                isInteractive: true,
-                hoverBoost: 0.4,
-                shadowOffsetY: 12 + elevation * 26,
-                shadowBlur: 14 + elevation * 22,
-                shadowAlpha: 0.11,
-              },
+              foreshortenX,
+              foreshortenY,
+              Math.max(0, foregroundAlpha),
             );
           }
         }
@@ -2020,10 +2392,7 @@
             !this.driftingBlossom &&
             !this.isModalOpen()
           ) {
-            const r = this.hoveredBlossom.baseRadius || 16;
-            const tooltip = document.getElementById("hoverTooltip");
-            tooltip.style.left = `${this.hoveredBlossom.x}px`;
-            tooltip.style.top = `${Math.max(76, this.hoveredBlossom.y - r - 8)}px`;
+            this.positionTooltip(this.hoveredBlossom);
           }
 
           requestAnimationFrame((nextNow) => this.frame(nextNow));
